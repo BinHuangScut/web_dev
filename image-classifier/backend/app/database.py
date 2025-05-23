@@ -3,25 +3,20 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Replace with your actual PostgreSQL connection string
-# DATABASE_URL = "postgresql://user:password@host:port/database"
-# Example for local PostgreSQL:
-# postgresql://your_postgres_user:your_postgres_password@localhost:5432/your_database_name
+# DATABASE_URL will be provided by Render or can be set locally e.g. via a .env file
+DATABASE_URL_ENV = os.getenv("DATABASE_URL")
 
-# It's better to use environment variables for sensitive data
-# POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres") # Default to 'postgres' user
-# POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password") # Replace with your actual default or use env
-# POSTGRES_SERVER = os.getenv("POSTGRES_SERVER", "localhost")
-# POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-# POSTGRES_DB = os.getenv("POSTGRES_DB", "image_classifier_db") # Choose a DB name
-
-POSTGRES_USER = "postgres"
-POSTGRES_PASSWORD = "525400"
-POSTGRES_SERVER = "localhost"
-POSTGRES_PORT = "5432"
-POSTGRES_DB = "image_classifier_db"
-
-DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
+if DATABASE_URL_ENV:
+    DATABASE_URL = DATABASE_URL_ENV
+else:
+    # Fallback to constructing from individual components if DATABASE_URL is not set
+    # This is useful for local development if you don't set DATABASE_URL directly
+    POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres") 
+    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "525400") # Replace with your actual default or use env
+    POSTGRES_SERVER = os.getenv("POSTGRES_SERVER", "localhost")
+    POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+    POSTGRES_DB = os.getenv("POSTGRES_DB", "image_classifier_db")
+    DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
 engine = create_engine(DATABASE_URL)
 

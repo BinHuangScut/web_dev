@@ -41,7 +41,7 @@ function App() {
 
     try {
       // Replace with your actual backend API endpoint
-      const response = await fetch('http://127.0.0.1:8000/api/predict', {
+      const response = await fetch('/api/predict', {
         method: 'POST',
         body: formData,
       });
