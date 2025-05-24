@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import './App.css';
 
+// For local development, you can create a .env file in the frontend directory:
+// REACT_APP_API_BASE_URL=http://127.0.0.1:8000
+// REACT_APP_API_ENDPOINT=/api/predict
+// For production, these will be set in Render's environment variables for the static site.
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_PREDICT_ENDPOINT = process.env.REACT_APP_API_PREDICT_ENDPOINT || '/api/predict';
+const fullApiUrl = `${API_BASE_URL}${API_PREDICT_ENDPOINT}`;
+
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -40,14 +48,12 @@ function App() {
     formData.append('file', selectedFile);
 
     try {
-      // Replace with your actual backend API endpoint
-      const response = await fetch('/api/predict', {
+      const response = await fetch(fullApiUrl, { // Use the configured fullApiUrl
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        // Try to get error message from backend if available
         const errorData = await response.json().catch(() => null);
         throw new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
       }
@@ -55,7 +61,7 @@ function App() {
       const data = await response.json();
       setPredictionResult(data);
     } catch (err) {
-      console.error("Error uploading file:", err);
+      console.error("Error uploading file to:", fullApiUrl, err);
       setError(err.message || "Failed to get prediction. Check console and backend logs.");
       setPredictionResult(null);
     } finally {

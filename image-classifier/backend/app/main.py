@@ -7,17 +7,10 @@ import io
 import os
 import uuid # For generating unique filenames
 from datetime import datetime # For timestamps in filenames or records
-from fastapi.staticfiles import StaticFiles # Added for static files
-from fastapi.responses import FileResponse # Added for serving index.html
 
 from sqlalchemy.orm import Session # Added for DB session
 from . import crud, models, schemas # Added for DB operations
 from .database import SessionLocal, engine, create_db_and_tables, get_db # Added
-
-# Determine the correct path to the frontend build directory
-# This assumes 'backend' and 'frontend' are sibling directories in the project root
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-FRONTEND_BUILD_DIR = os.path.join(BASE_DIR, "frontend", "build")
 
 # Create database and tables on startup
 # In a more complex app, you might use Alembic for migrations
@@ -29,9 +22,9 @@ app = FastAPI()
 # CORS (Cross-Origin Resource Sharing) middleware
 # Allow all origins for development, restrict in production
 origins = [
-    "http://localhost",
-    "http://localhost:3000", # Assuming React frontend runs on port 3000
-    # Add your deployed frontend URL here for production
+    "http://localhost:3000", # Local React dev
+    "http://localhost:8000", # Local FastAPI if testing API separately
+    # Add your deployed frontend service URL here later, e.g., "https://your-frontend-app.onrender.com"
 ]
 
 app.add_middleware(
@@ -44,10 +37,13 @@ app.add_middleware(
 
 # --- File Upload Directory ---
 # Determine the base directory of the backend
-# __file__ is backend/app/main.py, so os.path.dirname(__file__) is backend/app
-# os.path.dirname(os.path.dirname(__file__)) is backend/
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True) # Create uploads directory if it doesn't exist
+# __file__ is backend/app/main.py
+APP_DIR = os.path.dirname(os.path.abspath(__file__)) # backend/app
+BACKEND_DIR = os.path.dirname(APP_DIR) # backend/
+# Consider if UPLOAD_DIR should be inside BACKEND_DIR or at a different level
+# For Render, ephemeral storage is fine for uploads if they are temporary for processing
+UPLOAD_DIR = os.path.join(BACKEND_DIR, "uploads") 
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # --- Model Definition ---
 model_name = "SqueezeNet 1.1"
@@ -178,26 +174,6 @@ async def predict_image(file: UploadFile = File(...), db: Session = Depends(get_
         if file: # Ensure file object exists before trying to close
             await file.close()
 
-# --- Mount static files (for React build) ---
-# This should be AFTER your API routes
-app.mount("/static", StaticFiles(directory=os.path.join(FRONTEND_BUILD_DIR, "static")), name="static")
-
-@app.get("/{full_path:path}")
-async def serve_react_app(full_path: str):
-    """Serves the React app's index.html for any route not handled by API or static files."""
-    index_path = os.path.join(FRONTEND_BUILD_DIR, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    else:
-        # This case should ideally not be hit if the frontend is built correctly
-        raise HTTPException(status_code=404, detail="Frontend index.html not found. Ensure the frontend is built.")
-
-# To run this app:
-# 1. Navigate to the 'image-classifier/backend' directory in your terminal
-# 2. Ensure you have an 'app' subdirectory with this 'main.py' file inside it.
-# 3. Ensure 'imagenet_classes.txt' is in the 'backend' directory (one level above 'app').
-# 4. An 'uploads' directory will be automatically created in the 'backend' directory.
-# 5. Make sure your PostgreSQL server is running and you have created a database
-#    (e.g., 'image_classifier_db') that your DATABASE_URL in database.py points to.
-# 6. Run: uvicorn app.main:app --reload
-#    The --reload flag is for development and auto-reloads on code changes. 
+# To run this API-only app:
+# (Ensure database.py is configured and DB is running)
+# uvicorn app.main:app --reload 
