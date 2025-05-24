@@ -24,7 +24,7 @@ app = FastAPI()
 origins = [
     "http://localhost:3000", # Local React dev
     "http://localhost:8000", # Local FastAPI if testing API separately
-    # Add your deployed frontend service URL here later, e.g., "https://your-frontend-app.onrender.com"
+    "https://image-classifier-frontend-3mwq.onrender.com"# Add your deployed frontend service URL here later, e.g., "https://your-frontend-app.onrender.com"
 ]
 
 app.add_middleware(
