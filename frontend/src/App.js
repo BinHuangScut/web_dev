@@ -111,10 +111,10 @@ function App() {
             <div className="prediction-result-container">
               <h2>Prediction Result:</h2>
               <div className="prediction-card">
-                <p><strong>File:</strong> {predictionResult.filename}</p>
+                <p><strong>File:</strong> {predictionResult.original_filename}</p>
                 <p><strong>Predicted Class:</strong> <span className="predicted-class">{predictionResult.predicted_class}</span></p>
                 <p><strong>Confidence:</strong> <span className="confidence-score">{(predictionResult.confidence * 100).toFixed(2)}%</span></p>
-                <p><small>Model: {predictionResult.model_used}</small></p>
+                <p><small>Model: {predictionResult.model_version}</small></p>
                 {predictionResult.saved_filename && 
                   <p><small>Saved as: {predictionResult.saved_filename}</small></p>
                 }

@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
+# Pydantic Schemas (schemas.py): Handle data validation and defining the expected structure of API request/response data and data to be passed to CRUD functions.
 # Schema for creating a prediction (input)
 class PredictionCreate(BaseModel):
     original_filename: str
